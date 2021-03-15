@@ -19,15 +19,19 @@ make
 ```
 
 ## dependence
-TensorRT7.0.0.11
+```
+TensorRT7.0.0.11 
 OpenCV >= 3.4
 libtorch >=1.1.0
+```
 
 
 ## feature
+```
 1.tensorrt Multi output
 2.L2norm
 3.Postprocessing with libtorch
+```
 
 
 ## More Information
