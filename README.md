@@ -36,6 +36,6 @@ libtorch >=1.1.0
 
 ## More Information
 
-See the readme in [home page.](https://github.com/wang-xinyu/tensorrtx)
-[tensorrt tutorials](https://github.com/wang-xinyu/tensorrtx/tree/master/tutorials)
+See the readme in [home page.](https://github.com/wang-xinyu/tensorrtx) \n
+[tensorrt tutorials](https://github.com/wang-xinyu/tensorrtx/tree/master/tutorials) \n
 For more detailed guidance, see [yhl blog](https://www.cnblogs.com/yanghailin/p/14525128.html)
