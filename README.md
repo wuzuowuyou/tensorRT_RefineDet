@@ -27,15 +27,13 @@ libtorch >=1.1.0
 
 
 ## feature
-```
-1.tensorrt Multi output
-2.L2norm
+1.tensorrt Multi output  
+2.L2norm  
 3.Postprocessing with libtorch
-```
 
 
 ## More Information
 
-See the readme in [home page.](https://github.com/wang-xinyu/tensorrtx) \n
-[tensorrt tutorials](https://github.com/wang-xinyu/tensorrtx/tree/master/tutorials) \n
+See the readme in [home page.](https://github.com/wang-xinyu/tensorrtx)  
+[tensorrt tutorials](https://github.com/wang-xinyu/tensorrtx/tree/master/tutorials)  
 For more detailed guidance, see [yhl blog](https://www.cnblogs.com/yanghailin/p/14525128.html)
