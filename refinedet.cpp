@@ -500,7 +500,7 @@ ICudaEngine* createEngine(unsigned int maxBatchSize, IBuilder* builder, IBuilder
 
     //159375
     Dims dim4 = odm_conf->getOutput(0)->getDimensions();
-    odm_conf = reshapeSoftmax(network, *odm_conf->getOutput(0), 25);
+    odm_conf = reshapeSoftmax(network, *odm_conf->getOutput(0), num_class);
     std::cout <<"debug  odm_conf dim==" << dim4.d[0] << " " << dim4.d[1] << " " << dim4.d[2] << " " << dim4.d[3] << std::endl;
     odm_conf->getOutput(0)->setName(OUTPUT_BLOB_NAME_odm_conf);
     network->markOutput(*odm_conf->getOutput(0));
@@ -914,7 +914,7 @@ int main(int argc, char** argv) {
     const int OUTPUT_SIZE_odm_loc = 25500; //40*40*12 + 20*20*12 + 10*10*12 + 5*5*12 = 25500   (Fixed value)
     CUDA_CHECK(cudaMalloc(&buffers[outputIndex_odm_loc], batchSize * OUTPUT_SIZE_odm_loc * sizeof(float)));
 
-    const int OUTPUT_SIZE_odm_conf = 159375; //40*40*(num_class*3) + 20*20**(num_class*3) + 10*10**(num_class*3) + 5*5**(num_class*3) //here num_class=25// =159375
+    const int OUTPUT_SIZE_odm_conf = 40*40*(num_class*3) + 20*20*(num_class*3) + 10*10*(num_class*3) + 5*5*(num_class*3); //here num_class=25// =159375
     CUDA_CHECK(cudaMalloc(&buffers[outputIndex_odm_conf], batchSize * OUTPUT_SIZE_odm_conf * sizeof(float)));
 
     // Create stream
