@@ -498,7 +498,7 @@ ICudaEngine* createEngine(unsigned int maxBatchSize, IBuilder* builder, IBuilder
     odm_loc->getOutput(0)->setName(OUTPUT_BLOB_NAME_odm_loc);
     network->markOutput(*odm_loc->getOutput(0));
 
-    //159375
+    //159375 (num_class=25)
     Dims dim4 = odm_conf->getOutput(0)->getDimensions();
     odm_conf = reshapeSoftmax(network, *odm_conf->getOutput(0), num_class);
     std::cout <<"debug  odm_conf dim==" << dim4.d[0] << " " << dim4.d[1] << " " << dim4.d[2] << " " << dim4.d[3] << std::endl;
@@ -733,7 +733,7 @@ void doInference(IExecutionContext& context, void* buffers[], cudaStream_t &stre
     torch::Tensor arm_loc = torch::from_blob(buffers[outputIndex_arm_loc],{m_prior_size,4}).cuda().toType(torch::kFloat64).unsqueeze(0);
     torch::Tensor arm_conf = torch::from_blob(buffers[outputIndex_arm_conf],{m_prior_size,2}).cuda().toType(torch::kFloat64).unsqueeze(0);
     torch::Tensor odm_loc = torch::from_blob(buffers[outputIndex_odm_loc],{m_prior_size,4}).cuda().toType(torch::kFloat64).unsqueeze(0);
-    torch::Tensor odm_conf = torch::from_blob(buffers[outputIndex_odm_conf],{m_prior_size,25}).cuda().toType(torch::kFloat64).unsqueeze(0);
+    torch::Tensor odm_conf = torch::from_blob(buffers[outputIndex_odm_conf],{m_prior_size,num_class}).cuda().toType(torch::kFloat64).unsqueeze(0);
 
     float obj_threshed = 0.01;
     torch::Tensor arm_object_conf = arm_conf.squeeze(0).select(1,1);
@@ -753,7 +753,7 @@ void doInference(IExecutionContext& context, void* buffers[], cudaStream_t &stre
     float mask_thresh = 0.01;
 
     torch::Tensor result_out;
-    for(int i=1;i<25;i++)
+    for(int i=1;i<num_class;i++)
     {
         torch::Tensor c_mask_m = conf_preds[i] > mask_thresh;
         torch::Tensor nonzero_index = torch::nonzero(c_mask_m);
@@ -868,7 +868,6 @@ int main(int argc, char** argv) {
         file.read(trtModelStream, size);
         file.close();
     }
-
 #else
     std::cerr << "arguments not right!" << std::endl;
     std::cerr << "configure.h should difine SERIALIZE INFER" << std::endl;
@@ -921,13 +920,12 @@ int main(int argc, char** argv) {
     cudaStream_t stream;
     CUDA_CHECK(cudaStreamCreate(&stream));
 
-
     int fcount = 0;
     auto t_0 = std::chrono::steady_clock::now();
     for (auto f: file_names) {
         fcount++;
         std::cout << "\n" << fcount << "  " << f << std::endl;
-        std::cout << std::string(p_dir_name) + "/" + f << std::endl;
+        std::cout << std::string(p_dir_name) + f << std::endl;
 
         auto start_read = std::chrono::system_clock::now();
         cv::Mat img = cv::imread(std::string(p_dir_name) + "/" + f);
@@ -953,6 +951,14 @@ int main(int argc, char** argv) {
         double during_doinfer = std::chrono::duration_cast<std::chrono::milliseconds>(end_doInfer - start_doInfer).count();
         std::cout <<"time consume doInference===" <<  during_doinfer << "ms" << std::endl;
 
+        std::ofstream fout;
+        if (T_show == 0)
+        {
+            std::string name_1 = f.substr(0,f.size()-4);
+            std::string path_txt = save_path_txt + name_1 + ".txt";
+            fout.open(path_txt,std::ios::out);
+        }
+
         /* Print the detection results. */
         for (size_t i = 0; i < detections.size(); ++i)
         {
@@ -971,10 +977,8 @@ int main(int argc, char** argv) {
             {
                 continue;
             }
-
             cv::Rect r = cv::Rect((d[3] * img.cols), (d[4] * img.rows), (d[5] * img.cols - d[3] * img.cols),
                                      (d[6] * img.rows - d[4] * img.rows));
-
             RoiCorrect(img, r);
             if(T_show)
             {
@@ -982,9 +986,6 @@ int main(int argc, char** argv) {
             }
             if (T_show == 0)
             {
-                std::string name_1 = f.substr(0,f.size()-4);
-                std::string path_txt = save_path_txt + name_1 + ".txt";
-                std::ofstream fout(path_txt);
                 fout << label_map[label] << " " << score << " " << r.x << " " << r.y << " " << r.x + r.width
                      << " " << r.y + r.height << std::endl; //使用自己的label
             }
@@ -995,6 +996,7 @@ int main(int argc, char** argv) {
             cv::imshow("show",img);
             cv::waitKey(0);
         }
+        if(fout.is_open()) {fout.close();}
     }
     cudaStreamSynchronize(stream);
 
