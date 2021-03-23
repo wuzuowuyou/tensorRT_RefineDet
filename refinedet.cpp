@@ -971,11 +971,9 @@ int main(int argc, char** argv) {
             {
                 continue;
             }
-            cv::Rect r;
-            r.x = d[3] * img.cols;
-            r.y = d[4] * img.rows;
-            r.width = d[5] * img.cols - r.x;
-            r.height = d[6] * img.rows - r.y;
+
+            cv::Rect r = cv::Rect((d[3] * img.cols), (d[4] * img.rows), (d[5] * img.cols - d[3] * img.cols),
+                                     (d[6] * img.rows - d[4] * img.rows));
 
             RoiCorrect(img, r);
             if(T_show)
